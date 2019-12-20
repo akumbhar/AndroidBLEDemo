@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -28,11 +29,21 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //requestForPermission()
-        checkBTPermissions()
+        //requestForBTEnable()
+        //requestLocationPermission()
+        checkIfSystemHasBluetooth()
     }
 
-    private fun requestForPermission() {
+    private fun checkIfSystemHasBluetooth() {
+        packageManager.takeIf { it.missingSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) }?.also {
+            Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Method to enable bluetooth
+     */
+    private fun requestForBTEnable() {
         bluetoothAdapter?.takeIf { it.isDisabled }?.apply {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
@@ -45,7 +56,10 @@ class MainActivity : AppCompatActivity() {
         } else super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun checkBTPermissions() {
+    /**
+     * For location permission
+     */
+    private fun requestLocationPermission() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             var permissionCheck =
                 ContextCompat.checkSelfPermission(this, "Manifest.permission.ACCESS_FINE_LOCATION")
@@ -65,7 +79,7 @@ class MainActivity : AppCompatActivity() {
                 //startBluetoothActivities()
             }
         } else {
-            doLog("checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.")
+            doLog("requestLocationPermission: No need to check permissions. SDK version < LOLLIPOP.")
         }
     }
 
